@@ -1,12 +1,15 @@
 // frontend/src/pages/SplashPage.js
 
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
+// ✅ REMOVED useNavigate import since it's not used
+// import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logopic.jpg";
 
 function SplashPage() {
-  const navigate = useNavigate();
+  // ✅ REMOVED unused navigate variable
+  // const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [fadeIn, setFadeIn] = useState(false);
 

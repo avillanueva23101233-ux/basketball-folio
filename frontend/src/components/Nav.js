@@ -16,9 +16,7 @@ function Nav({ darkMode, toggleDarkMode }) {
     setIsMenuOpen(false);
   }, [location]);
 
-  const isActive = (path) => {
-    return location.pathname === path ? "active" : "";
-  };
+  // ✅ REMOVED unused isActive function (lines 24-27 were deleted)
 
   const handleLogout = () => {
     logout();

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { authAPI } from "../api/axios";
+// ✅ REMOVED unused import: import { authAPI } from "../api/axios";
 import Nav from "../components/Nav";
 
 function ForgotPasswordPage({ darkMode, toggleDarkMode }) {
