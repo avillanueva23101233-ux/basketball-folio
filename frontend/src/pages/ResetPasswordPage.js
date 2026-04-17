@@ -1,12 +1,10 @@
 // frontend/src/pages/ResetPasswordPage.js
 
 import { useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";  // ✅ REMOVED useParams
 import Nav from "../components/Nav";
 
 function ResetPasswordPage({ darkMode, toggleDarkMode }) {
-  // ✅ COMPLETELY REMOVE the token variable - not needed for mock
-  // const { token } = useParams();  // DELETE THIS LINE
   const navigate = useNavigate();
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [errors, setErrors] = useState({});
@@ -52,7 +50,7 @@ function ResetPasswordPage({ darkMode, toggleDarkMode }) {
       setError("");
       
       try {
-        // Mock success - token not needed for mock
+        // Mock success
         setTimeout(() => {
           setSuccess(true);
           setTimeout(() => navigate("/login"), 3000);
