@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-// ✅ REMOVED unused import: import { authAPI } from "../api/axios";
 import Nav from "../components/Nav";
 
 function ResetPasswordPage({ darkMode, toggleDarkMode }) {
-  // ✅ Keep token but add underscore to indicate intentionally unused
-  const { token: _token } = useParams();
+  // ✅ COMPLETELY REMOVE the token variable - not needed for mock
+  // const { token } = useParams();  // DELETE THIS LINE
   const navigate = useNavigate();
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [errors, setErrors] = useState({});
@@ -53,10 +52,7 @@ function ResetPasswordPage({ darkMode, toggleDarkMode }) {
       setError("");
       
       try {
-        // TODO: Replace with actual API call when backend is ready
-        // await authAPI.resetPassword(_token, form.password);
-        
-        // Mock success
+        // Mock success - token not needed for mock
         setTimeout(() => {
           setSuccess(true);
           setTimeout(() => navigate("/login"), 3000);
