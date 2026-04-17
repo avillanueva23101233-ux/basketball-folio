@@ -17,6 +17,7 @@ const User = require('./models/User');
 const postRoutes = require('./routes/post.routes');
 const adminRoutes = require('./routes/admin.routes');
 const commentRoutes = require('./routes/comment.routes');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
@@ -129,6 +130,7 @@ app.get('/api/test', (req, res) => {
 app.use('/api/posts', postRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/auth', authRoutes);
 
 // =========================
 // PRODUCTION STATIC FILES (ADDED HERE)
@@ -449,4 +451,5 @@ app.listen(PORT, () => {
   console.log(`👤 Profile API: http://localhost:${PORT}/api/users/profile`);
   console.log(`🖼️ Avatar upload: http://localhost:${PORT}/api/users/avatar`);
   console.log(`📁 Uploads directory: ${path.join(__dirname, 'uploads')}`);
+  console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
 });

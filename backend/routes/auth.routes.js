@@ -2,13 +2,109 @@
 
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
-const { sendResetEmail } = require('../config/email');
 
-// ... (your existing login and register routes)
+// =========================
+// REGISTER ROUTE
+// =========================
+router.post('/register', async (req, res) => {
+  try {
+    const { name, email, password, skillLevel } = req.body;
+    
+    console.log("Registration attempt:", email);
+    
+    // Check if user exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+    
+    // Create user - Let User model's pre-save hook handle password hashing
+    const user = new User({
+      name,
+      email: email.toLowerCase(),
+      password: password,  // Plain password - model will hash it
+      role: 'user',
+      bio: `🏀 Basketball enthusiast - ${skillLevel || 'Beginner'} level`,
+      status: 'active'
+    });
+    
+    await user.save();
+    
+    console.log("User created:", email);
+    
+    // Create token
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role, name: user.name },
+      process.env.JWT_SECRET || 'secret123',
+      { expiresIn: '7d' }
+    );
+    
+    res.status(201).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        bio: user.bio,
+        avatar: user.avatar || ''
+      }
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// =========================
+// LOGIN ROUTE
+// =========================
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    console.log("Login attempt:", email);
+    
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    
+    // Check password using model's comparePassword method
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    
+    // Create token
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role, name: user.name },
+      process.env.JWT_SECRET || 'secret123',
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        bio: user.bio,
+        avatar: user.avatar || ''
+      }
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // =========================
 // FORGOT PASSWORD ROUTE
@@ -21,7 +117,6 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
     
-    // Find user by email
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       // For security, don't reveal that email doesn't exist
@@ -32,30 +127,19 @@ router.post('/forgot-password', async (req, res) => {
     
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
     
-    // Save token to database
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = resetTokenExpiry;
     await user.save();
     
-    // Send email with reset link
-    const emailSent = await sendResetEmail(user.email, resetToken, user.name);
+    console.log(`Reset token for ${email}: ${resetToken}`);
     
-    if (emailSent) {
-      res.status(200).json({ 
-        message: 'Password reset link sent to your email address.' 
-      });
-    } else {
-      // Clear token if email failed
-      user.resetPasswordToken = null;
-      user.resetPasswordExpires = null;
-      await user.save();
-      
-      res.status(500).json({ 
-        message: 'Failed to send reset email. Please try again later.' 
-      });
-    }
+    res.status(200).json({ 
+      message: 'Password reset link sent to your email address.',
+      devToken: resetToken,
+      resetUrl: `http://localhost:3000/reset-password/${resetToken}`
+    });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: 'Server error. Please try again later.' });
@@ -100,12 +184,8 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ message: 'Invalid or expired reset token. Please request a new one.' });
     }
     
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    
-    // Update user password and clear reset fields
-    user.password = hashedPassword;
+    // Update password (let model's pre-save hook hash it)
+    user.password = password;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
     await user.save();
@@ -120,7 +200,7 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // =========================
-// VERIFY RESET TOKEN ROUTE (Optional - for validation)
+// VERIFY RESET TOKEN ROUTE
 // =========================
 router.get('/verify-reset-token/:token', async (req, res) => {
   try {
