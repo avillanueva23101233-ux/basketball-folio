@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-// ✅ REMOVED unused import: import { authAPI } from "../api/axios";
+import authAPI from "../api/axios";  // ✅ Using real API
 import Nav from "../components/Nav";
 
 function ForgotPasswordPage({ darkMode, toggleDarkMode }) {
@@ -30,16 +30,12 @@ function ForgotPasswordPage({ darkMode, toggleDarkMode }) {
     setLoading(true);
     
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // await authAPI.forgotPassword(email);
-      
-      // Mock success
-      setTimeout(() => {
-        setSuccess(true);
-        setLoading(false);
-      }, 1000);
+      // ✅ REAL API CALL - NO MORE MOCK!
+      await authAPI.post('/auth/forgot-password', { email });
+      setSuccess(true);
     } catch (err) {
-      setError(err.message || "Failed to send reset email. Please try again.");
+      setError(err.response?.data?.message || "Failed to send reset email. Please try again.");
+    } finally {
       setLoading(false);
     }
   };

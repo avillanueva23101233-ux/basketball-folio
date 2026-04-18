@@ -1,10 +1,12 @@
 // frontend/src/pages/ResetPasswordPage.js
 
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";  // ✅ REMOVED useParams
+import { useNavigate, useParams, Link } from "react-router-dom";  // ✅ Added useParams back
+import authAPI from "../api/axios";  // ✅ Using real API
 import Nav from "../components/Nav";
 
 function ResetPasswordPage({ darkMode, toggleDarkMode }) {
+  const { token } = useParams();  // ✅ Get token from URL
   const navigate = useNavigate();
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [errors, setErrors] = useState({});
@@ -50,14 +52,16 @@ function ResetPasswordPage({ darkMode, toggleDarkMode }) {
       setError("");
       
       try {
-        // Mock success
-        setTimeout(() => {
-          setSuccess(true);
-          setTimeout(() => navigate("/login"), 3000);
-          setLoading(false);
-        }, 1000);
+        // ✅ REAL API CALL - NO MORE MOCK!
+        await authAPI.post('/auth/reset-password', { 
+          token: token,  // Send token from URL
+          password: form.password 
+        });
+        setSuccess(true);
+        setTimeout(() => navigate("/login"), 3000);
       } catch (err) {
-        setError(err.message || "Failed to reset password. Please try again.");
+        setError(err.response?.data?.message || "Failed to reset password. Please try again.");
+      } finally {
         setLoading(false);
       }
     }
@@ -159,6 +163,24 @@ function ResetPasswordPage({ darkMode, toggleDarkMode }) {
       textDecoration: "none"
     }
   };
+
+  // ✅ Show error if no token in URL
+  if (!token) {
+    return (
+      <>
+        <Nav darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        <div className="about-container">
+          <section style={styles.container}>
+            <h2 style={styles.title}>❌ Invalid Reset Link</h2>
+            <p style={styles.subtitle}>The password reset link is missing or invalid.</p>
+            <div style={styles.backLink}>
+              <Link to="/forgot-password" style={styles.link}>Request a new reset link →</Link>
+            </div>
+          </section>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
