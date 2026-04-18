@@ -22,10 +22,11 @@ const authRoutes = require('./routes/auth.routes');
 const app = express();
 
 // =========================
-// MIDDLEWARE
+// MIDDLEWARE - UPDATED CORS ✅
 // =========================
+
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://basketball-folio.vercel.app'],
   credentials: true
 }));
 app.use(express.json());
