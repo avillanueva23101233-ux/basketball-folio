@@ -55,7 +55,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // =========================
 // MONGODB CONNECTION
 // =========================
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/thefolio';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://aldrinmanzano27_db_user:admin2026@cluster0.kjfrol8.mongodb.net/?appName=Cluster0';
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ MongoDB Connected'))
@@ -137,15 +137,13 @@ app.use('/api/auth', authRoutes);
 // PRODUCTION STATIC FILES (ADDED HERE)
 // =========================
 // Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-  // Serve frontend static files
-  app.use(express.static(path.join(__dirname, '../frontend/build')));
-  
-  // Handle React routing - serve index.html for any unknown route
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-  });
-}
+// Serve static assets in production - DISABLED for Render backend-only deployment
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(express.static(path.join(__dirname, '../frontend/build')));
+//   app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+//   });
+// }
 
 // =========================
 // AUTH ROUTES
